@@ -87,6 +87,16 @@ public class Creature extends Thing {
         return this.visionRadius;
     }
 
+    private int direction;
+
+    public int getDirection() {
+        return direction;
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
+    }
+
     public boolean canSee(int wx, int wy) {
         return ai.canSee(wx, wy);
     }
@@ -143,8 +153,8 @@ public class Creature extends Thing {
         ai.onNotify(message);
     }
 
-    public Creature(World world, ImageView imageView, int maxHP, int attack, int defense, int visionRadius) {
-        super(world, imageView);
+    public Creature(World world, String imagePath, int maxHP, int attack, int defense, int visionRadius) {
+        super(world, imagePath);
         this.maxHP = maxHP;
         this.hp = maxHP;
         this.attackValue = attack;

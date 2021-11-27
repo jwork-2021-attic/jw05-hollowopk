@@ -65,16 +65,16 @@ public class MonsterAI extends CreatureAI {
     public void rotate(int direction) {
         switch (direction) {
             case 0:
-                creature.setImageView("monster_up.png");
+                creature.setImagePath("monster_up.png");
                 break;
             case 1:
-                creature.setImageView("monster_down.png");
+                creature.setImagePath("monster_down.png");
                 break;
             case 2:
-                creature.setImageView("monster_left.png");
+                creature.setImagePath("monster_left.png");
                 break;
             case 3:
-                creature.setImageView("monster_right.png");
+                creature.setImagePath("monster_right.png");
                 break;
         }
     }

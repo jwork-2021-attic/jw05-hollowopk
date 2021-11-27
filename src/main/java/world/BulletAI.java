@@ -61,13 +61,12 @@ public class BulletAI extends ItemAI {
     public void attack(Thing other) {
         if (!(other == owner)) {    //子弹不会攻击发射子弹的人
             if (other instanceof Item) {
-                item.world.removeThing(other);
+                ((Item) other).getRemoved();
             } else if (other instanceof Creature) {
                 Creature otherCreature = (Creature) other;
                 otherCreature.modifyHP(-10);
             }
         }
-        item.world.removeThing(item);
         item.getRemoved();
     }
 }

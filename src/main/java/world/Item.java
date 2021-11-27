@@ -25,8 +25,8 @@ public class Item extends Thing {
         this.ai = ai;
     }
 
-    public Item(World world, ImageView imageView) {
-        super(world, imageView);
+    public Item(World world, String imagePath) {
+        super(world, imagePath);
     }
 
     public void moveBy(int mx, int my) {

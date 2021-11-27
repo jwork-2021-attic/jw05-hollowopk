@@ -19,13 +19,14 @@ package world;
 
 import javafx.scene.image.ImageView;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author Aeranythe Echosong
  */
-public class Factory {
+public class Factory implements Serializable {
 
     private final World world;
 
@@ -33,50 +34,50 @@ public class Factory {
         this.world = world;
     }
 
-    public Creature newPlayer(List<String> messages, ImageView playerView) {
-        Creature player = new Creature(this.world, playerView, 100, 20, 5, 40);
+    public Creature newPlayer(List<String> messages) {
+        Creature player = new Creature(this.world,  "player_right.gif", 100, 20, 5, 40);
         new PlayerAI(player, messages, this);
         world.addPlayer(player);
         return player;
     }
 
     public void newPortals() {
-        Item portal1 = new Item(this.world, new ImageView("portal.png"));
-        Item portal2 = new Item(this.world, new ImageView("portal.png"));
-        world.addPortals(portal1, portal2);
+        Item portal1 = new Item(this.world, "portal.png");
+        Item portal2 = new Item(this.world, "portal.png");
         new PortalAI(portal1, this, portal2);
         new PortalAI(portal2, this, portal1);
+        world.addPortals(portal1, portal2);
     }
 
     public void newMedicine() {
-        Item medicine = new Item(this.world, new ImageView("medicine.png"));
-        world.addAtEmptyLocation(medicine);
+        Item medicine = new Item(this.world, "medicine.png");
         new MedicineAI(medicine, this);
+        world.addAtEmptyLocation(medicine);
     }
 
     public void newHoe() {
-        Item hoe = new Item(this.world, new ImageView("hoe.png"));
-        world.addAtEmptyLocation(hoe);
+        Item hoe = new Item(this.world, "hoe.png");
         new HoeAI(hoe, this);
+        world.addAtEmptyLocation(hoe);
     }
 
     public void newBullet(int x, int y, int direction, Creature owner) {
-        Item bullet = new Item(this.world, new ImageView("bullet.png"));
+        Item bullet = new Item(this.world, "bullet.png");
         if (world.addBulletAtGivenLocation(x, y, bullet)) {
             new BulletAI(bullet, this, direction, owner);
         }
     }
 
     public void newMonster() {
-        Creature monster = new Creature(this.world, new ImageView("monster_right.png"), 1, 15, 5, 0);
-        world.addAtEmptyLocation(monster);
+        Creature monster = new Creature(this.world, "monster_right.png", 1, 15, 5, 0);
         new MonsterAI(monster, this);
+        world.addAtEmptyLocation(monster);
     }
 
     public void newBombMonster() {
-        Creature bombMonster = new Creature(this.world, new ImageView("bomb1.png"), 1, 0, 0, 0);
-        world.addAtEmptyLocation(bombMonster);
+        Creature bombMonster = new Creature(this.world, "bomb1.png", 1, 0, 0, 0);
         new BombMonsterAI(bombMonster, this);
+        world.addAtEmptyLocation(bombMonster);
     }
 
 }

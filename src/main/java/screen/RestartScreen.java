@@ -19,6 +19,7 @@ package screen;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import world.World;
@@ -29,23 +30,14 @@ import world.World;
  */
 public abstract class RestartScreen implements Screen {
 
-    private ImageView playerView;
-
-    public RestartScreen(ImageView playerView) {
-        this.playerView = playerView;
-    }
-
     @Override
     public abstract Screen displayOutput(GridPane gridPane);
 
     @Override
-    public Screen respondToUserInput(KeyEvent key) {
-        switch (key.getCode()) {
+    public Screen respondToUserInput(KeyCode keyCode) {
+        switch (keyCode) {
             case ENTER:
-                playerView.setLayoutX(8 * World.blockSize - 15);
-                playerView.setLayoutY(10);
-                playerView.setImage(new Image("player_right.gif"));
-                return new PlayScreen(playerView);
+                return new PlayScreen();
             default:
                 return this;
         }

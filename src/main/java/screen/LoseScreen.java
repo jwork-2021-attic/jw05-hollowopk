@@ -30,10 +30,6 @@ import javafx.scene.text.Text;
  */
 public class LoseScreen extends RestartScreen {
 
-    public LoseScreen(ImageView imageView) {
-        super(imageView);
-    }
-
     @Override
     public Screen displayOutput(GridPane gridPane) {
         Text text = new Text("You lost! Press enter to try again.");

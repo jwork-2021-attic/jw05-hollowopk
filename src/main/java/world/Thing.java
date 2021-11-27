@@ -2,9 +2,21 @@ package world;
 
 import javafx.scene.image.ImageView;
 
-public class Thing {
+import java.io.Serializable;
+
+public class Thing implements Serializable {
 
     protected String name;
+
+    protected String imagePath;
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
 
     protected World world;
 
@@ -35,24 +47,9 @@ public class Thing {
         }
     }
 
-    protected ImageView imageView;
-
-    public ImageView imageView() {
-        return this.imageView;
-    }
-
-    public void setImageView(String path) {
-        ImageView imageView = new ImageView(path);
-        this.imageView = imageView;
-        imageView.setFitWidth(World.blockSize);
-        imageView.setFitHeight(World.blockSize);
-    }
-
-    public Thing(World world, ImageView imageView) {
+    public Thing(World world, String imagePath) {
         this.world = world;
-        imageView.setFitWidth(World.blockSize);
-        imageView.setFitHeight(World.blockSize);
-        this.imageView = imageView;
+        this.imagePath = imagePath;
     }
 
 }

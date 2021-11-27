@@ -17,15 +17,12 @@
  */
 package screen;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import world.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,17 +30,13 @@ import java.util.List;
  *
  * @author Aeranythe Echosong
  */
-public class PlayScreen implements Screen {
+public class PlayScreen implements Screen, Serializable {
 
     private World world;
     private Creature player;
-    private ImageView playerView;
     private final List<String> messages;
-    private final Image wallImage = new Image("wall.png");
-    private final Image grassImage = new Image("grass.png");
 
-    public PlayScreen(ImageView playerView) {
-        this.playerView = playerView;
+    public PlayScreen() {
         createWorld();
         this.messages = new ArrayList<>();
 
@@ -51,12 +44,63 @@ public class PlayScreen implements Screen {
         createThings(factory);
     }
 
-    public void setPlayerView(ImageView playerView) {
-        this.playerView = playerView;
+    public Tile[][] getTiles() {
+        Tile[][] tiles = world.getTiles();
+        Tile[][] res = new Tile[tiles.length][tiles[0].length];
+        for (int i = 0;i < tiles.length;i++) {
+            for (int j = 0;j < tiles[0].length;j++) {
+                res[i][j] = tiles[i][j];
+            }
+        }
+        return res;
+    }
+
+    public ThingData[] getData() {
+        List<Thing> thingList = world.getThings();
+        List<ThingData> dataList = new ArrayList<>();
+        world.thingsLock.lock();
+        try {
+            for (Thing thing : thingList) {
+                ThingData data = new ThingData(thing.getImagePath(), thing.x(), thing.y());
+                if (thing instanceof Creature && ((Creature) thing).getAI() instanceof PlayerAI) {
+                    data.setPlayerNum(0);
+                } else {
+                    data.setPlayerNum(-1);
+                }
+                dataList.add(data);
+            }
+        } finally {
+            world.thingsLock.unlock();
+        }
+        ThingData[] dataArray = new ThingData[dataList.size()];
+        dataList.toArray(dataArray);
+        return dataArray;
+    }
+
+    public String[] getMessages() {
+        String []msgArray = new String[messages.size()];
+        messages.toArray(msgArray);
+        return msgArray;
+    }
+
+    public String getState() {
+        String stats = String.format("%d/%d hp", player.hp(), player.maxHP());
+        String hoeStats = String.format("You have \n%d hoes", ((PlayerAI) player.getAI()).getHoes());
+        return (stats + "\n\n" + hoeStats);
+    }
+
+    public Screen check() {
+        if (player.hp() <= 0) {
+            return new LoseScreen();
+        }
+        if (player.x() == World.blockCount - 1 && player.y() == World.blockCount - 1) {
+            return new WinScreen();
+        }
+        return this;
     }
 
     private void createThings(Factory factory) {
-        this.player = factory.newPlayer(this.messages, playerView);
+        this.player = factory.newPlayer(this.messages);
         for (int i = 0; i < 10; i++) {
             factory.newMedicine();
             factory.newMonster();
@@ -72,84 +116,20 @@ public class PlayScreen implements Screen {
         world = new WorldBuilder(World.blockCount, World.blockCount).makeCaves().build();
     }
 
-    private void displayTiles(GridPane gridPane, int left, int top) {
-        // Show terrain
-        for (int x = 0; x < World.blockCount; x++) {
-            for (int y = 0; y < World.blockCount; y++) {
-                int wx = x + left;
-                int wy = y + top;
-                if (world.glyph(wx, wy) == Tile.WALL.getRectangle()) {
-                    ImageView tmp = new ImageView(wallImage);
-                    tmp.setFitHeight(World.blockSize);
-                    tmp.setFitWidth(World.blockSize);
-                    gridPane.add(tmp, x, y);
-                    //gridPane.add(new Rectangle(World.blockSize, World.blockSize, Color.WHITE), x, y);
-                } else {
-                    ImageView tmp = new ImageView(grassImage);
-                    tmp.setFitHeight(World.blockSize);
-                    tmp.setFitWidth(World.blockSize);
-                    //gridPane.add(tmp, x, y);
-                    gridPane.add(new Rectangle(World.blockSize, World.blockSize, Color.BLACK), x, y);
-                }
-            }
-        }
-        // Show creatures
-        world.thingsLock.lock();
-        try {
-            for (Thing thing : world.getThings()) {
-                if (thing.x() >= left && thing.x() < left + World.blockCount && thing.y() >= top
-                        && thing.y() < top + World.blockCount) {
-                    if (thing.imageView() != playerView) {
-                        gridPane.add(thing.imageView(), thing.x() - left, thing.y() - top);
-                    }
-                }
-            }
-        } finally {
-            world.thingsLock.unlock();
-        }
-    }
-
-    public void displayMessages(Text msgText) {
-        world.msgLock.lock();
-        msgText.setText("");
-        try {
-            for (final String message : messages) {
-                msgText.setText(msgText.getText() + "\n" + message);
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(5000);
-                        removeMessage(message);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-            }
-        } finally {
-            world.msgLock.unlock();
-        }
-    }
-
-    public void displayState(Text stateText) {
-        String stats = String.format("%d/%d hp", player.hp(), player.maxHP());
-        String hoeStats = String.format("You have \n%d hoes", ((PlayerAI) player.getAI()).getHoes());
-        stateText.setText(stats + "\n\n" + hoeStats);
-    }
-
     @Override
     public Screen displayOutput(GridPane gridPane) {
-        displayTiles(gridPane, getScrollX(), getScrollY());
         if (player.hp() <= 0) {
-            return new LoseScreen(playerView);
+            return new LoseScreen();
         }
         if (player.x() == World.blockCount - 1 && player.y() == World.blockCount - 1) {
-            return new WinScreen(playerView);
+            return new WinScreen();
         }
         return this;
     }
 
     @Override
-    public Screen respondToUserInput(KeyEvent key) {
-        switch (key.getCode()) {
+    public Screen respondToUserInput(KeyCode keyCode) {
+        switch (keyCode) {
             case LEFT:
                 player.moveBy(-1, 0);
                 player.rotate(2);

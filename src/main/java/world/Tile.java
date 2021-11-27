@@ -3,6 +3,8 @@ package world;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.Serializable;
+
 /*
  * Copyright (C) 2015 Aeranythe Echosong
  *
@@ -25,7 +27,7 @@ import javafx.scene.shape.Rectangle;
  *
  * @author Aeranythe Echosong
  */
-public enum Tile {
+public enum Tile implements Serializable {
 
     FLOOR(Color.WHITE),
 

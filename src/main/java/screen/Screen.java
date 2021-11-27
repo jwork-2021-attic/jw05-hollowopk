@@ -17,6 +17,7 @@
  */
 package screen;
 
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 
@@ -29,5 +30,5 @@ public interface Screen {
 
     Screen displayOutput(GridPane gridPane);
 
-    Screen respondToUserInput(KeyEvent key);
+    Screen respondToUserInput(KeyCode keyCode);
 }

@@ -32,10 +32,6 @@ import javafx.scene.text.TextAlignment;
  */
 public class WinScreen extends RestartScreen {
 
-    public WinScreen(ImageView playerView) {
-        super(playerView);
-    }
-
     @Override
     public Screen displayOutput(GridPane gridPane) {
         Text text = new Text("You won! Press enter to go again.");

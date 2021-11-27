@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Aeranythe Echosong
  */
-public class World {
+public class World implements Serializable {
 
     public ReentrantLock thingsLock = new ReentrantLock();
     public ReentrantLock portalsLock = new ReentrantLock();
@@ -69,6 +70,10 @@ public class World {
         } else {
             return tiles[x][y];
         }
+    }
+
+    public Tile[][] getTiles() {
+        return tiles;
     }
 
     public void setTileToGround(int x, int y) {
@@ -188,9 +193,8 @@ public class World {
     public void addPortals(Item item1, Item item2) {
         addAtEmptyLocation(item1);
         addAtEmptyLocation(item2);
-        String path = portalPath.get(currentColor % portalPath.size());
-        item1.setImageView(path);
-        item2.setImageView(path);
+        item1.imagePath = item2.imagePath =
+                portalPath.get(currentColor % portalPath.size());
         currentColor++;
         portalsLock.lock();
         try {

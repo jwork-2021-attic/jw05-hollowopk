@@ -1,8 +1,5 @@
 package world;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-
 public class BombMonsterAI extends CreatureAI {
 
     private boolean countdown = false;
@@ -12,6 +9,8 @@ public class BombMonsterAI extends CreatureAI {
     private static int count = 0;
     private static int maxCount = 10;
     private static double spreadChance = 0.3;
+
+    public int state = 0;
 
     public BombMonsterAI(Creature creature, Factory factory) {
         super(creature);
@@ -63,10 +62,7 @@ public class BombMonsterAI extends CreatureAI {
         String []paths = {"bomb2.png", "bomb1.png"};
         for (int i = 0;i < 10;i++) {
             try {
-                ImageView newView = new ImageView(paths[i % 2]);
-                newView.setFitHeight(World.blockSize);
-                newView.setFitWidth(World.blockSize);
-                creature.imageView = newView;
+                creature.imagePath = paths[i % 2];
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();

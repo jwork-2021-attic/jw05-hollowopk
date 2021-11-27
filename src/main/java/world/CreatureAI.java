@@ -17,13 +17,14 @@
  */
 package world;
 
+import java.io.Serializable;
 import java.util.Random;
 
 /**
  *
  * @author Aeranythe Echosong
  */
-class CreatureAI implements Runnable {
+class CreatureAI implements Runnable, Serializable {
 
     protected Creature creature;
 

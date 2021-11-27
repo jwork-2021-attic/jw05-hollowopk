@@ -1,6 +1,8 @@
 package world;
 
-public class ItemAI implements Runnable {
+import java.io.Serializable;
+
+public class ItemAI implements Runnable, Serializable {
 
     protected Item item;
     protected Factory factory;

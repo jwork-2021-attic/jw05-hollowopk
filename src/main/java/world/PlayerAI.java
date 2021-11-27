@@ -40,21 +40,15 @@ public class PlayerAI extends CreatureAI {
 
     public PlayerAI(Creature creature, List<String> messages, Factory factory) {
         super(creature);
-        setImageSize(2 * World.blockSize);
         this.messages = messages;
         this.factory = factory;
         this.creature.name = "player";
         hoes = 0;
     }
 
-    private void setImageSize(int size) {
-        creature.imageView.setFitHeight(size);
-        creature.imageView.setFitWidth(size);
-    }
-
     public void onEnter(int x, int y, Tile tile) {
         if (tile.isGround()) {
-            setImageLocation(x, y);
+            setPlayerLocation(x, y);
         } else if (tile.isWall()) {
             if (hoes > 0) {
                 dig(x, y);
@@ -62,11 +56,7 @@ public class PlayerAI extends CreatureAI {
         }
     }
 
-    private void setImageLocation(int x, int y) {
-        int transX = (x - creature.x) * World.blockSize;
-        int transY = (y - creature.y) * World.blockSize;
-        creature.imageView.setLayoutX(creature.imageView.getLayoutX() + transX);
-        creature.imageView.setLayoutY(creature.imageView.getLayoutY() + transY);
+    private void setPlayerLocation(int x, int y) {
         creature.setX(x);
         creature.setY(y);
     }
@@ -81,6 +71,19 @@ public class PlayerAI extends CreatureAI {
         creature.world.msgLock.lock();
         try {
             this.messages.add(message);
+            new Thread(() -> {
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                creature.world.msgLock.lock();
+                try {
+                    this.messages.remove(message);
+                } finally {
+                    creature.world.msgLock.unlock();
+                }
+            }).start();
         } finally {
             creature.world.msgLock.unlock();
         }
@@ -117,7 +120,7 @@ public class PlayerAI extends CreatureAI {
                 Item otherPortal = ((PortalAI) otherItem.getAi()).getOtherPortal();
                 if (otherPortal != null) {
                     otherPortal.getRemoved();
-                    setImageLocation(otherPortal.x(), otherPortal.y());
+                    setPlayerLocation(otherPortal.x(), otherPortal.y());
                 }
             }
             ((Item) other).getRemoved();
@@ -135,16 +138,16 @@ public class PlayerAI extends CreatureAI {
     public void rotate(int direction) {
         switch (direction) {
             case 0:
-                creature.imageView.setImage(new Image("player_up.gif"));
+                creature.setImagePath("player_up.gif");
                 break;
             case 1:
-                creature.imageView.setImage(new Image("player_down.gif"));
+                creature.setImagePath("player_down.gif");
                 break;
             case 2:
-                creature.imageView.setImage(new Image("player_left.gif"));
+                creature.setImagePath("player_left.gif");
                 break;
             case 3:
-                creature.imageView.setImage(new Image("player_right.gif"));
+                creature.setImagePath("player_right.gif");
                 break;
         }
     }
