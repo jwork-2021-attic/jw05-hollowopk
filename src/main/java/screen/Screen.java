@@ -30,5 +30,5 @@ public interface Screen {
 
     Screen displayOutput(GridPane gridPane);
 
-    Screen respondToUserInput(KeyCode keyCode);
+    Screen respondToUserInput(KeyCode keyCode, int playerNum);
 }

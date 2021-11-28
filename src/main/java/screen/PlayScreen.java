@@ -25,6 +25,7 @@ import world.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -33,12 +34,15 @@ import java.util.List;
 public class PlayScreen implements Screen, Serializable {
 
     private World world;
-    private Creature player;
-    private final List<String> messages;
+    private Creature player1;
+    private Creature player2;
+    private final List<String> messages1;
+    private final List<String> messages2;
 
     public PlayScreen() {
         createWorld();
-        this.messages = new ArrayList<>();
+        this.messages1 = new ArrayList<>();
+        this.messages2 = new ArrayList<>();
 
         Factory factory = new Factory(this.world);
         createThings(factory);
@@ -62,8 +66,10 @@ public class PlayScreen implements Screen, Serializable {
         try {
             for (Thing thing : thingList) {
                 ThingData data = new ThingData(thing.getImagePath(), thing.x(), thing.y());
-                if (thing instanceof Creature && ((Creature) thing).getAI() instanceof PlayerAI) {
+                if (thing == player1) {
                     data.setPlayerNum(0);
+                }  else if (thing == player2) {
+                    data.setPlayerNum(1);
                 } else {
                     data.setPlayerNum(-1);
                 }
@@ -77,30 +83,50 @@ public class PlayScreen implements Screen, Serializable {
         return dataArray;
     }
 
-    public String[] getMessages() {
-        String []msgArray = new String[messages.size()];
-        messages.toArray(msgArray);
-        return msgArray;
+    public String[] getMessages(int playerNum) {
+        if (playerNum == 0) {
+            String[] msgArray = new String[messages1.size()];
+            messages1.toArray(msgArray);
+            return msgArray;
+        } else if (playerNum == 1) {
+            String[] msgArray = new String[messages2.size()];
+            messages2.toArray(msgArray);
+            return msgArray;
+        }
+        return null;
     }
 
-    public String getState() {
+    public String getState(int playerNum) {
+        Creature player = player1;
+        if (playerNum == 1) {
+            player = player2;
+        }
         String stats = String.format("%d/%d hp", player.hp(), player.maxHP());
         String hoeStats = String.format("You have \n%d hoes", ((PlayerAI) player.getAI()).getHoes());
         return (stats + "\n\n" + hoeStats);
     }
 
-    public Screen check() {
-        if (player.hp() <= 0) {
-            return new LoseScreen();
+    public String check(int playerNum) {
+        Creature player = player1;
+        Creature otherPlayer = player2;
+        if (playerNum == 1) {
+            player = player2;
+            otherPlayer = player1;
         }
-        if (player.x() == World.blockCount - 1 && player.y() == World.blockCount - 1) {
-            return new WinScreen();
+        if (player.hp() <= 0 ||
+                (otherPlayer.x() == World.blockCount - 1 && otherPlayer.y() == World.blockCount - 1)) {
+            return "lose";
         }
-        return this;
+        if (otherPlayer.hp() <= 0 ||
+                (player.x() == World.blockCount - 1 && player.y() == World.blockCount - 1)) {
+            return "win";
+        }
+        return "playing";
     }
 
     private void createThings(Factory factory) {
-        this.player = factory.newPlayer(this.messages);
+        this.player1 = factory.newPlayer(this.messages1);
+        this.player2 = factory.newPlayer2(this.messages2);
         for (int i = 0; i < 10; i++) {
             factory.newMedicine();
             factory.newMonster();
@@ -118,69 +144,67 @@ public class PlayScreen implements Screen, Serializable {
 
     @Override
     public Screen displayOutput(GridPane gridPane) {
-        if (player.hp() <= 0) {
+        if (player1.hp() <= 0) {
             return new LoseScreen();
         }
-        if (player.x() == World.blockCount - 1 && player.y() == World.blockCount - 1) {
+        if (player1.x() == World.blockCount - 1 && player1.y() == World.blockCount - 1) {
             return new WinScreen();
         }
         return this;
     }
 
     @Override
-    public Screen respondToUserInput(KeyCode keyCode) {
-        switch (keyCode) {
-            case LEFT:
-                player.moveBy(-1, 0);
-                player.rotate(2);
-                break;
-            case RIGHT:
-                player.moveBy(1, 0);
-                player.rotate(3);
-                break;
-            case UP:
-                player.moveBy(0, -1);
-                player.rotate(0);
-                break;
-            case DOWN:
-                player.moveBy(0, 1);
-                player.rotate(1);
-                break;
-            case W:
-                player.fire(BulletAI.UP);
-                player.rotate(0);
-                break;
-            case S:
-                player.fire(BulletAI.DOWN);
-                player.rotate(1);
-                break;
-            case A:
-                player.fire(BulletAI.LEFT);
-                player.rotate(2);
-                break;
-            case D:
-                player.fire(BulletAI.RIGHT);
-                player.rotate(3);
-                break;
+    public Screen respondToUserInput(KeyCode keyCode, int playerNum) {
+        Creature player;
+        if (playerNum == 0) {
+            player = player1;
+        } else {
+            player = player2;
+        }
+        if (!Objects.equals(check(playerNum), "playing")) {
+            switch (keyCode) {
+                case ENTER:
+                    return new PlayScreen();
+                default:
+                    return this;
+            }
+        } else {
+            switch (keyCode) {
+                case LEFT:
+                    player.moveBy(-1, 0);
+                    player.rotate(2);
+                    break;
+                case RIGHT:
+                    player.moveBy(1, 0);
+                    player.rotate(3);
+                    break;
+                case UP:
+                    player.moveBy(0, -1);
+                    player.rotate(0);
+                    break;
+                case DOWN:
+                    player.moveBy(0, 1);
+                    player.rotate(1);
+                    break;
+                case W:
+                    player.fire(BulletAI.UP);
+                    player.rotate(0);
+                    break;
+                case S:
+                    player.fire(BulletAI.DOWN);
+                    player.rotate(1);
+                    break;
+                case A:
+                    player.fire(BulletAI.LEFT);
+                    player.rotate(2);
+                    break;
+                case D:
+                    player.fire(BulletAI.RIGHT);
+                    player.rotate(3);
+                    break;
+            }
         }
         return this;
-    }
-
-    public int getScrollX() {
-        return Math.max(0, Math.min(player.x() - World.blockCount / 2, world.width() - World.blockCount));
-    }
-
-    public int getScrollY() {
-        return Math.max(0, Math.min(player.y() - World.blockCount / 2, world.height() - World.blockCount));
-    }
-
-    public void removeMessage(String msg) {
-        world.msgLock.lock();
-        try {
-            messages.remove(msg);
-        } finally {
-            world.msgLock.unlock();
-        }
     }
 
 }

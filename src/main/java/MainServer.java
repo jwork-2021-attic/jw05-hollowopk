@@ -21,13 +21,13 @@ public class MainServer {
         int connect = 0;
         while (connect < 2) {
             Socket socket = serverSocket.accept();
-            sendSceneMessage(socket);
-            handleOnKeyPressed(socket);
+            sendSceneMessage(socket, connect);
+            handleOnKeyPressed(socket, connect);
             connect++;
         }
     }
 
-    private static void sendSceneMessage(Socket socket) {
+    private static void sendSceneMessage(Socket socket, int playerNum) {
         new Thread(() -> {
             try {
                 ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
@@ -36,17 +36,10 @@ public class MainServer {
                         PlayScreen playScreen = (PlayScreen) screen;
                         ThingData[] data = playScreen.getData();
                         Tile[][] tiles = playScreen.getTiles();
-                        String[] messages = playScreen.getMessages();
-                        String state = playScreen.getState();
+                        String[] messages = playScreen.getMessages(playerNum);
+                        String state = playScreen.getState(playerNum);
                         MapData mapData = new MapData(data, tiles, messages, state);
-                        screen = playScreen.check();
-                        if (screen instanceof WinScreen) {
-                            mapData.setGameState("win");
-                        } else if (screen instanceof LoseScreen) {
-                            mapData.setGameState("lose");
-                        } else {
-                            mapData.setGameState("playing");
-                        }
+                        mapData.setGameState(playScreen.check(playerNum));
                         oos.writeObject(mapData);
                         oos.flush();
                     }
@@ -60,7 +53,7 @@ public class MainServer {
         }).start();
     }
 
-    private static void handleOnKeyPressed(Socket socket) throws IOException {
+    private static void handleOnKeyPressed(Socket socket, int playerNum) throws IOException {
         InputStream is = socket.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         new Thread(() -> {
@@ -72,7 +65,7 @@ public class MainServer {
                     break;
                 }
                 KeyCode keyCode = KeyCode.getKeyCode(name);
-                screen = screen.respondToUserInput(keyCode);
+                screen = screen.respondToUserInput(keyCode, playerNum);
             }
         }).start();
     }

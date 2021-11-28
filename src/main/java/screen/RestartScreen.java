@@ -34,7 +34,7 @@ public abstract class RestartScreen implements Screen {
     public abstract Screen displayOutput(GridPane gridPane);
 
     @Override
-    public Screen respondToUserInput(KeyCode keyCode) {
+    public Screen respondToUserInput(KeyCode keyCode, int playerNum) {
         switch (keyCode) {
             case ENTER:
                 return new PlayScreen();

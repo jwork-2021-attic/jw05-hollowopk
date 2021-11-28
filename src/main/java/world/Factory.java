@@ -36,8 +36,15 @@ public class Factory implements Serializable {
 
     public Creature newPlayer(List<String> messages) {
         Creature player = new Creature(this.world,  "player_right.gif", 100, 20, 5, 40);
-        new PlayerAI(player, messages, this);
+        new PlayerAI(player, messages, this, "player");
         world.addPlayer(player);
+        return player;
+    }
+
+    public Creature newPlayer2(List<String> messages) {
+        Creature player = new Creature(this.world,  "player2_right.gif", 100, 20, 5, 40);
+        new PlayerAI(player, messages, this, "player2");
+        world.addAtEmptyLocation(player);
         return player;
     }
 

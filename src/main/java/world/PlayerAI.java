@@ -46,6 +46,14 @@ public class PlayerAI extends CreatureAI {
         hoes = 0;
     }
 
+    public PlayerAI(Creature creature, List<String> messages, Factory factory, String name) {
+        super(creature);
+        this.messages = messages;
+        this.factory = factory;
+        this.creature.name = name;
+        hoes = 0;
+    }
+
     public void onEnter(int x, int y, Tile tile) {
         if (tile.isGround()) {
             setPlayerLocation(x, y);
@@ -136,18 +144,19 @@ public class PlayerAI extends CreatureAI {
 
     @Override
     public void rotate(int direction) {
+        String name = this.creature.name;
         switch (direction) {
             case 0:
-                creature.setImagePath("player_up.gif");
+                creature.setImagePath(name + "_up.gif");
                 break;
             case 1:
-                creature.setImagePath("player_down.gif");
+                creature.setImagePath(name + "_down.gif");
                 break;
             case 2:
-                creature.setImagePath("player_left.gif");
+                creature.setImagePath(name + "_left.gif");
                 break;
             case 3:
-                creature.setImagePath("player_right.gif");
+                creature.setImagePath(name + "_right.gif");
                 break;
         }
     }
