@@ -1,10 +1,5 @@
 package world;
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-
-import java.io.Serializable;
-
 /*
  * Copyright (C) 2015 Aeranythe Echosong
  *
@@ -27,39 +22,12 @@ import java.io.Serializable;
  *
  * @author Aeranythe Echosong
  */
-public enum Tile implements Serializable {
+public enum Tile {
 
-    FLOOR(Color.WHITE),
+    FLOOR,
 
-    WALL(Color.BLACK),
+    WALL,
 
-    BOUNDS(Color.CYAN);
-
-    private static final int blockSize = 30;
-
-    private Rectangle rectangle;
-
-    public Rectangle getRectangle() {
-        return rectangle;
-    }
-
-    private Color color;
-
-    public Color color() {
-        return color;
-    }
-
-    public boolean isWall() {
-        return this == Tile.WALL;
-    }
-
-    public boolean isGround() {
-        return this != Tile.WALL && this != Tile.BOUNDS;
-    }
-
-    Tile(Color color) {
-        this.rectangle = new Rectangle(blockSize, blockSize, color);
-        this.color = color;
-    }
+    BOUNDS;
 
 }
