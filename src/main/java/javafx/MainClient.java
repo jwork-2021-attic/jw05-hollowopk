@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MyClient extends Application {
+public class MainClient extends Application {
 
     private Pane pane;
     private GridPane gridPane;
