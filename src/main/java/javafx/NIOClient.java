@@ -220,6 +220,7 @@ public class NIOClient extends Application {
         Scene scene = new Scene(pane,
                 worldSize + 10 * World.blockSize, worldSize + 2 * World.blockSize);
         gridPane.requestFocus();
+        setVisible(false);
         return scene;
     }
 
