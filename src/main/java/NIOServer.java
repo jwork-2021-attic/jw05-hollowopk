@@ -16,8 +16,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class NIOServer {
 
@@ -25,6 +28,9 @@ public class NIOServer {
 
     private static ServerSocketChannel serverSocketChannel;
     private static Selector selector;
+
+    private static List<SelectionKey> clients;
+    private static ReentrantLock clientsLock;
 
     public static void main(String[] args) throws IOException {
         init();
@@ -36,7 +42,8 @@ public class NIOServer {
     }
 
     private static void init() throws IOException {
-        screen = new PlayScreen();
+        clients = new ArrayList<>();
+        clientsLock = new ReentrantLock();
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.socket().bind(new InetSocketAddress(3456));
         serverSocketChannel.configureBlocking(false);
@@ -60,8 +67,12 @@ public class NIOServer {
                 }
 
                 if (key.isAcceptable()) {
-                    if (connect < 3) {
+                    if (connect < 2) {
                         handleKeyAccept(key, connect++);
+                    }
+                    if (connect == 2) {
+                        screen = new PlayScreen();
+                        sendMapData();
                     }
                 }
 
@@ -80,8 +91,12 @@ public class NIOServer {
         ServerSocketChannel socketChannel = (ServerSocketChannel) key.channel();
         SocketChannel client = socketChannel.accept();
         client.configureBlocking(false);
-        client.register(selector, interestSet, playerNum);
-        sendMapData(playerNum, client);
+        clientsLock.lock();
+        try {
+            clients.add(client.register(selector, interestSet, playerNum));
+        } finally {
+            clientsLock.unlock();
+        }
     }
 
     private static void handleKeyRead(SelectionKey key) throws IOException {
@@ -110,36 +125,43 @@ public class NIOServer {
         return null;
     }
 
-    private static void sendMapData(int playerNum, SocketChannel channel) {
+    private static void sendMapData() {
         new Thread(() -> {
             while (true) {
-                if (!channel.isOpen()) {
-                    break;
-                }
                 try {
                     Thread.sleep(30);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                MapData mapData = getMapData(playerNum);
-                if (mapData != null) {
-                    byte[] bytes;
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    try {
-                        ObjectOutputStream oos = new ObjectOutputStream(bos);
-                        oos.writeObject(mapData);
-                        oos.flush();
-                        bytes = bos.toByteArray();
-                        oos.close();
-                        bos.close();
-                    } catch (IOException ex) {
-                        break;
+                clientsLock.lock();
+                try {
+                    for (SelectionKey key : clients) {
+                        int playerNum = (int) key.attachment();
+                        SocketChannel channel = (SocketChannel) key.channel();
+                        MapData mapData = getMapData(playerNum);
+                        if (mapData != null) {
+                            byte[] bytes;
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                            try {
+                                ObjectOutputStream oos = new ObjectOutputStream(bos);
+                                oos.writeObject(mapData);
+                                oos.flush();
+                                bytes = bos.toByteArray();
+                                oos.close();
+                                bos.close();
+                            } catch (IOException ex) {
+                                break;
+                            }
+                            clientsLock.lock();
+                            try {
+                                channel.write(ByteBuffer.wrap(bytes));
+                            } catch (IOException e) {
+                                break;
+                            }
+                        }
                     }
-                    try {
-                        channel.write(ByteBuffer.wrap(bytes));
-                    } catch (IOException e) {
-                        break;
-                    }
+                } finally {
+                    clientsLock.unlock();
                 }
             }
         }).start();
