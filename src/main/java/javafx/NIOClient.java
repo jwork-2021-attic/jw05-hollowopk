@@ -17,9 +17,7 @@ import javafx.stage.Stage;
 import screen.Screen;
 import world.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -42,6 +40,7 @@ public class NIOClient extends Application {
     private List<Rectangle> borders;
 
     private String fileName = "record.txt";
+    private ObjectOutputStream fos;
 
     private SocketChannel acceptChannel;
     private SocketChannel channel;
@@ -69,7 +68,7 @@ public class NIOClient extends Application {
         acceptChannel.register(selector, SelectionKey.OP_CONNECT);
         InetSocketAddress socketAddress = new InetSocketAddress("localhost", 3456);
         acceptChannel.connect(socketAddress);
-
+        fos = new ObjectOutputStream(new FileOutputStream(fileName));
     }
 
     private void buildConnection() {
@@ -103,20 +102,6 @@ public class NIOClient extends Application {
         }).start();
     }
 
-    private MapData getMapData1(SelectionKey key) throws IOException, ClassNotFoundException {
-        SocketChannel socketChannel = (SocketChannel) key.channel();
-        socketChannel.register(selector, SelectionKey.OP_READ);
-        byte[] bytes = new byte[6000];
-        socketChannel.read(ByteBuffer.wrap(bytes));
-        ByteArrayInputStream bi = new ByteArrayInputStream(bytes);
-        ObjectInputStream oi = new ObjectInputStream(bi);
-        Object obj = oi.readObject();
-        if (obj != null) {
-            return (MapData) obj;
-        }
-        return null;
-    }
-
     private MapData getMapData(SelectionKey key) throws IOException, ClassNotFoundException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
         socketChannel.register(selector, SelectionKey.OP_READ);
@@ -130,6 +115,7 @@ public class NIOClient extends Application {
             ObjectInputStream oi = new ObjectInputStream(bi);
             Object obj = oi.readObject();
             if (obj != null) {
+                fos.writeObject(obj);
                 return (MapData) obj;
             }
         }

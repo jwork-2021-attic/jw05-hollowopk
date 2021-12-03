@@ -65,13 +65,14 @@ public class RecordPlayer extends Application {
                     if (obj != null) {
                         MapData mapData = (MapData) obj;
                         Platform.runLater(() -> {
+                            gridPane.getChildren().clear();
                             repaint(mapData);
                         });
+                    } else {
+                        break;
                     }
                 }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException | ClassNotFoundException ignored) {}
         }).start();
     }
 
